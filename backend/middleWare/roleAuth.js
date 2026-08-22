@@ -1,4 +1,4 @@
-const requireRole = (role) => {
+const requireRole = (allowedRoles) => {
     return (req, res, next) => {
         if (!req.user || !req.user.role) {
             return res.status(403).json({
@@ -7,10 +7,12 @@ const requireRole = (role) => {
             });
         }
 
-        if (req.user.role !== role) {
+        const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+
+        if (!roles.includes(req.user.role)) {
             return res.status(403).json({
                 success: false,
-                message: `Forbidden: Requires ${role} role`
+                message: `Forbidden: Requires one of these roles: ${roles.join(', ')}`
             });
         }
 

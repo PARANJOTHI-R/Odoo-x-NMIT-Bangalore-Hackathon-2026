@@ -51,7 +51,10 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       const data = await apiSignin({ email, password });
-      // Normalise response — backend may return { token, user } or { token, data }
+      // Backend returns { success, token, user } in body
+      if (!data.success) {
+        throw Object.assign(new Error(data.message || 'Login failed'), { response: { data } });
+      }
       const jwt      = data.token || data.accessToken;
       const userData = data.user  || data.data  || data.employee || {};
       persistSession(userData, jwt);
@@ -61,15 +64,22 @@ export function AuthProvider({ children }) {
     }
   }, [persistSession]);
 
-  const register = useCallback(async (name, email, password) => {
+  const register = useCallback(async (name, email, password, role) => {
     setLoading(true);
     try {
-      const data = await apiSignup({ name, email, password });
+      const data = await apiSignup({ name, email, password, role });
+      if (!data.success) {
+        throw Object.assign(new Error(data.message || 'Registration failed'), { response: { data } });
+      }
+      // If backend returns a token on registration, persist the session automatically
+      if (data.token && data.user) {
+        persistSession(data.user, data.token);
+      }
       return { success: true, data };
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [persistSession]);
 
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);

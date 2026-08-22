@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Edit2, X, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { updateEmployee } from '../../services/profileService';
 import LoadingSpinner from '../common/LoadingSpinner';
+import api from '../../services/api';
 
 function RoleBadge({ role }) {
   return (
-    <span className={`badge ${role === 'admin' ? 'badge-info' : 'badge-default'}`}>
+    <span className={`badge ${role === 'hr' ? 'badge-info' : 'badge-default'}`}>
       {role ?? 'employee'}
     </span>
   );
@@ -32,6 +33,12 @@ export default function EmployeeTable({ employees = [], loading = false, onUpdat
   const [editingId,  setEditingId]  = useState(null);
   const [editData,   setEditData]   = useState({});
   const [saving,     setSaving]     = useState(false);
+  const [teams,      setTeams]      = useState([]);
+
+  // Fetch teams for the dropdown
+  useEffect(() => {
+    api.get('/api/teams').then(res => setTeams(res.data?.data || [])).catch(() => {});
+  }, []);
 
   const filtered = employees.filter((e) => {
     const q = query.toLowerCase();
@@ -50,6 +57,7 @@ export default function EmployeeTable({ employees = [], loading = false, onUpdat
       department: emp.department ?? '',
       position:   emp.position   ?? '',
       role:       emp.role       ?? 'employee',
+      team_id:    emp.team_id    ?? '',
     });
   }
 
@@ -106,6 +114,7 @@ export default function EmployeeTable({ employees = [], loading = false, onUpdat
                 <th>Employee</th>
                 <th>Department</th>
                 <th>Position</th>
+                <th>Team</th>
                 <th>Role</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -175,6 +184,28 @@ export default function EmployeeTable({ employees = [], loading = false, onUpdat
                       )}
                     </td>
 
+                    {/* Team */}
+                    <td>
+                      {editing ? (
+                        <select
+                          className="form-control"
+                          style={{ padding: '4px 8px', fontSize: 13 }}
+                          value={editData.team_id || ''}
+                          onChange={(e) => setEditData((d) => ({ ...d, team_id: e.target.value }))}
+                          aria-label="Team"
+                        >
+                          <option value="">Unassigned</option>
+                          {teams.map(t => (
+                            <option key={t.id} value={t.id}>{t.name}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span style={{ fontSize: 14 }}>
+                          {emp.team_id ? (teams.find(t => t.id === emp.team_id)?.name || `Team #${emp.team_id}`) : '—'}
+                        </span>
+                      )}
+                    </td>
+
                     {/* Role */}
                     <td>
                       {editing ? (
@@ -186,7 +217,7 @@ export default function EmployeeTable({ employees = [], loading = false, onUpdat
                           aria-label="Role"
                         >
                           <option value="employee">Employee</option>
-                          <option value="admin">Admin</option>
+                          <option value="hr">HR Manager</option>
                         </select>
                       ) : (
                         <RoleBadge role={emp.role} />

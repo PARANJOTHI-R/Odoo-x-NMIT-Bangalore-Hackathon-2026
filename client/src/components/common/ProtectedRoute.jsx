@@ -27,7 +27,7 @@ export default function ProtectedRoute({ children, role = null }) {
 
   if (role && user?.role !== role) {
     // Redirect to the appropriate dashboard for the authenticated user
-    const destination = user?.role === 'admin' ? '/admin/dashboard' : '/dashboard';
+    const destination = user?.role === 'hr' ? '/admin/dashboard' : '/dashboard';
     return <Navigate to={destination} replace />;
   }
 

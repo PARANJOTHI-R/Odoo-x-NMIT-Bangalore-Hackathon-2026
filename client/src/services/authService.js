@@ -20,10 +20,18 @@ export async function signin(data) {
 }
 
 /**
- * Verify email address with token from link.
- * @param {string} token
+ * Request a new verification OTP.
  */
-export async function verifyEmail(token) {
-  const res = await api.get(`/api/auth/verify-email/${token}`);
+export async function sendVerifyOtp() {
+  const res = await api.post('/api/auth/send-verify-otp');
+  return res.data;
+}
+
+/**
+ * Verify email address with OTP.
+ * @param {string} otp
+ */
+export async function verifyEmailOtp(otp) {
+  const res = await api.post('/api/auth/verify-account', { otp });
   return res.data;
 }

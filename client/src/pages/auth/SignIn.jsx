@@ -33,7 +33,7 @@ export default function SignIn() {
 
       if (from) {
         navigate(from, { replace: true });
-      } else if (result.user?.role === 'admin') {
+      } else if (result.user?.role === 'hr') {
         navigate('/admin/dashboard', { replace: true });
       } else {
         navigate('/dashboard', { replace: true });

@@ -22,6 +22,7 @@ const EMPLOYEE_LINKS = [
 
 const ADMIN_LINKS = [
   { to: '/admin/dashboard', label: 'Dashboard',       Icon: LayoutDashboard },
+  { to: '/admin/teams',     label: 'Teams',           Icon: ShieldCheck     },
   { to: '/admin/employees', label: 'Employees',       Icon: Users           },
   { to: '/admin/attendance',label: 'Attendance',      Icon: CalendarCheck   },
   { to: '/admin/leave',     label: 'Leave Management',Icon: CalendarDays    },
@@ -42,7 +43,7 @@ export default function Sidebar({ open, onClose }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'hr';
   const links   = isAdmin ? ADMIN_LINKS : EMPLOYEE_LINKS;
 
   function handleLogout() {

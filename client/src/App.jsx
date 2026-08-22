@@ -19,6 +19,7 @@ import AdminEmployeesPage from './pages/admin/AdminEmployeesPage';
 import AdminAttendancePage from './pages/admin/AdminAttendancePage';
 import AdminLeavePage from './pages/admin/AdminLeavePage';
 import AdminPayrollPage from './pages/admin/AdminPayrollPage';
+import AdminTeamsPage from './pages/admin/AdminTeamsPage';
 
 // Components
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -45,7 +46,7 @@ function RootRedirect() {
   if (!isAuthenticated) {
     return <Navigate to="/signin" replace />;
   }
-  return <Navigate to={user?.role === 'admin' ? '/admin/dashboard' : '/dashboard'} replace />;
+  return <Navigate to={user?.role === 'hr' ? '/admin/dashboard' : '/dashboard'} replace />;
 }
 
 function NotFound() {
@@ -68,7 +69,7 @@ export default function App() {
         {/* Public Auth Routes */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
 
         {/* Protected App Routes */}
         <Route
@@ -89,7 +90,7 @@ export default function App() {
           <Route
             path="/admin/dashboard"
             element={
-              <ProtectedRoute role="admin">
+              <ProtectedRoute role="hr">
                 <AdminDashboard />
               </ProtectedRoute>
             }
@@ -97,7 +98,7 @@ export default function App() {
           <Route
             path="/admin/employees"
             element={
-              <ProtectedRoute role="admin">
+              <ProtectedRoute role="hr">
                 <AdminEmployeesPage />
               </ProtectedRoute>
             }
@@ -105,7 +106,7 @@ export default function App() {
           <Route
             path="/admin/attendance"
             element={
-              <ProtectedRoute role="admin">
+              <ProtectedRoute role="hr">
                 <AdminAttendancePage />
               </ProtectedRoute>
             }
@@ -113,7 +114,7 @@ export default function App() {
           <Route
             path="/admin/leave"
             element={
-              <ProtectedRoute role="admin">
+              <ProtectedRoute role="hr">
                 <AdminLeavePage />
               </ProtectedRoute>
             }
@@ -121,8 +122,16 @@ export default function App() {
           <Route
             path="/admin/payroll"
             element={
-              <ProtectedRoute role="admin">
+              <ProtectedRoute role="hr">
                 <AdminPayrollPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/teams"
+            element={
+              <ProtectedRoute role="hr">
+                <AdminTeamsPage />
               </ProtectedRoute>
             }
           />

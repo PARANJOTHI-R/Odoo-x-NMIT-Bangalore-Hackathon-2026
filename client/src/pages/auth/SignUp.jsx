@@ -13,6 +13,7 @@ const schema = z
     email:           z.string().min(1, 'Email is required').email('Enter a valid email'),
     password:        z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string().min(1, 'Please confirm your password'),
+    role:            z.enum(['employee', 'hr']).default('employee'),
   })
   .refine((d) => d.password === d.confirmPassword, {
     message: "Passwords don't match",
@@ -57,9 +58,9 @@ export default function SignUp() {
 
   async function onSubmit(data) {
     try {
-      await registerUser(data.name, data.email, data.password);
+      await registerUser(data.name, data.email, data.password, data.role);
       toast.success('Account created! Check your email to verify.');
-      navigate('/verify-email/pending');
+      navigate('/verify-email');
     } catch (err) {
       const msg =
         err?.response?.data?.message ||
@@ -189,6 +190,23 @@ export default function SignUp() {
             {errors.confirmPassword && (
               <span className="form-error" role="alert">{errors.confirmPassword.message}</span>
             )}
+          </div>
+          
+          <div className="form-group" style={{ marginBottom: 24 }}>
+            <label className="form-label" htmlFor="signup-role">Account Type</label>
+            <div className="input-wrapper has-icon-left">
+              <User className="input-icon-left" size={16} aria-hidden="true" />
+              <select
+                id="signup-role"
+                className={`form-control${errors.role ? ' error' : ''}`}
+                {...register('role')}
+                defaultValue="employee"
+              >
+                <option value="employee">Employee</option>
+                <option value="hr">HR Manager</option>
+              </select>
+            </div>
+            {errors.role && <span className="form-error" role="alert">{errors.role.message}</span>}
           </div>
 
           <button

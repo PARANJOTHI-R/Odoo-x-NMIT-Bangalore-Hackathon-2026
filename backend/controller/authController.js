@@ -12,10 +12,14 @@ import {
 import transporter from '../config/nodeMailer.js';
 
 export const register = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, role: rawRole } = req.body;
     if (!name || !email || !password) {
         return res.json({ success: false, message: 'Missing details' });
     }
+
+    // Validate role — only 'hr' and 'employee' are supported
+    const VALID_ROLES = ['hr', 'employee'];
+    const role = VALID_ROLES.includes(rawRole) ? rawRole : 'employee';
 
     try {
         const existingUser = await findUserByEmail(email);
@@ -25,12 +29,11 @@ export const register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Explicitly set role = 'hr' per requirements
         const user = await createUser({
             name,
             email,
             passwordHash: hashedPassword,
-            role: 'hr'
+            role
         });
 
         const token = jwt.sign(
@@ -55,11 +58,16 @@ export const register = async (req, res) => {
 
         try {
             await transporter.sendMail(mailOptions);
-            return res.json({ success: true, message: 'User registered and welcome email sent' });
         } catch (emailError) {
-            console.error("Email sending failed during registration:", emailError.message);
-            return res.json({ success: false, message: `User registered successfully, but failed to send welcome email: ${emailError.message}` });
+            console.error('Welcome email failed (user still created):', emailError.message);
         }
+
+        // Always return success + token so client can authenticate
+        return res.json({
+            success: true,
+            token,
+            user: { id: user.id, name: user.name, email: user.email, role: user.role }
+        });
 
     } catch (error) {
         return res.json({ success: false, message: error.message });
@@ -90,6 +98,7 @@ export const login = async (req, res) => {
             { expiresIn: '7d' }
         );
 
+        // Set httpOnly cookie (for cookie-based clients)
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -97,7 +106,12 @@ export const login = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        return res.json({ success: true });
+        // Also return token in body (for localStorage-based clients like the React app)
+        return res.json({
+            success: true,
+            token,
+            user: { id: user.id, name: user.name, email: user.email, role: user.role }
+        });
 
     } catch (error) {
         return res.json({ success: false, message: error.message });
